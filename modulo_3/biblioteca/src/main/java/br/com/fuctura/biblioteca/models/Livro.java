@@ -1,22 +1,17 @@
 package br.com.fuctura.biblioteca.models;
 
+import br.com.fuctura.biblioteca.Enums.Edicao;
+
 public class Livro {
 
 	private Integer id;
 	private String titulo;
 	private String autor;
 	private String texto;
+	private Edicao edicao;
 	private Categoria categoria;
 
 	public Livro() {
-	}
-
-	public Livro(Integer id, String titulo, String autor, String texto, Categoria categoria) {
-		this.id = id;
-		this.titulo = titulo;
-		this.autor = autor;
-		this.texto = texto;
-		this.categoria = categoria;
 	}
 
 	public Integer getId() {
@@ -51,6 +46,14 @@ public class Livro {
 		this.texto = texto;
 	}
 
+	public Edicao getEdicao() {
+		return edicao;
+	}
+
+	public void setEdicao(Edicao edicao) {
+		this.edicao = edicao;
+	}
+
 	public Categoria getCategoria() {
 		return categoria;
 	}
@@ -58,5 +61,4 @@ public class Livro {
 	public void setCategoria(Categoria categoria) {
 		this.categoria = categoria;
 	}
-
 }

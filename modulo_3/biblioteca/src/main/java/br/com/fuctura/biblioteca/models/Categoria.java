@@ -1,10 +1,15 @@
 package br.com.fuctura.biblioteca.models;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Categoria {
 
 	private Integer id;
 	private String nome;
 	private String descricao;
+
+	private List<Livro> livros = new ArrayList<>();
 
 	public Categoria() {
 	}
