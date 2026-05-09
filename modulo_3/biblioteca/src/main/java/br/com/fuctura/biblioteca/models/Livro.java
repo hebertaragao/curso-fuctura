@@ -1,14 +1,21 @@
 package br.com.fuctura.biblioteca.models;
 
 import br.com.fuctura.biblioteca.Enums.Edicao;
+import jakarta.persistence.*;
 
+@Entity
 public class Livro {
 
+	@Id
+	@GeneratedValue(strategy = jakarta.persistence.GenerationType.AUTO)
 	private Integer id;
 	private String titulo;
 	private String autor;
 	private String texto;
 	private Edicao edicao;
+
+	@ManyToOne
+	@JoinColumn(name = "categoria_id")
 	private Categoria categoria;
 
 	public Livro() {
