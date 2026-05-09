@@ -1,17 +1,19 @@
 package br.com.fuctura.biblioteca.models;
 
-import br.com.fuctura.biblioteca.Enums.Edicao;
+import br.com.fuctura.biblioteca.enums.Edicao;
 import jakarta.persistence.*;
 
 @Entity
 public class Livro {
 
 	@Id
-	@GeneratedValue(strategy = jakarta.persistence.GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 	private String titulo;
 	private String autor;
 	private String texto;
+
+	@Enumerated(EnumType.STRING)
 	private Edicao edicao;
 
 	@ManyToOne
@@ -19,6 +21,15 @@ public class Livro {
 	private Categoria categoria;
 
 	public Livro() {
+	}
+
+	public Livro(Integer id, String titulo, String autor, String texto, Edicao edicao, Categoria categoria) {
+		this.id = id;
+		this.titulo = titulo;
+		this.autor = autor;
+		this.texto = texto;
+		this.edicao = edicao;
+		this.categoria = categoria;
 	}
 
 	public Integer getId() {
