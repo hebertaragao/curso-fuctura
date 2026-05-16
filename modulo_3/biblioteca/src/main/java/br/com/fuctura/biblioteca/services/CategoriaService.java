@@ -24,4 +24,15 @@ public class CategoriaService {
         List<Categoria> list = categoriaRepository.findAll();
         return list;
     }
+
+    public Categoria salvar(Categoria categoria) {
+        Categoria cat = categoriaRepository.save(categoria);
+        return cat;
+    }
+
+
+    public Categoria atualizar(Categoria categoria) {
+        Categoria cat = categoriaRepository.save(categoria);
+        return cat;
+    }
 }
