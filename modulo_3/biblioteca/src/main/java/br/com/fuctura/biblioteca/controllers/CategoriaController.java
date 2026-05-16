@@ -3,7 +3,6 @@ package br.com.fuctura.biblioteca.controllers;
 import br.com.fuctura.biblioteca.models.Categoria;
 import br.com.fuctura.biblioteca.services.CategoriaService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,8 +39,8 @@ public class CategoriaController {
         return cat;
     }
 
-    @DeleteMapping
-    public void excluir(@RequestBody Categoria categoria) {
-
+    @DeleteMapping("/{id}")
+    public void deletar(@PathVariable Integer id) {
+        categoriaService.deletar(id);
     }
 }

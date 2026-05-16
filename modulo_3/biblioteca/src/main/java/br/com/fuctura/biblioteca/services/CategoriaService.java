@@ -35,4 +35,9 @@ public class CategoriaService {
         Categoria cat = categoriaRepository.save(categoria);
         return cat;
     }
+
+
+    public void deletar(Integer id) {
+        categoriaRepository.deleteById(id);
+    }
 }
