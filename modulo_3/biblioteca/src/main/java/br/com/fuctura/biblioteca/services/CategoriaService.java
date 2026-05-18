@@ -19,6 +19,10 @@ public class CategoriaService {
         return cat.get();
     }
 
+    public List<Categoria> buscarPorNome(String nome) {
+        List<Categoria> list = categoriaRepository.findByNomeContainingIgnoreCase(nome);
+        return list;
+    }
 
     public List<Categoria> buscarTodos() {
         List<Categoria> list = categoriaRepository.findAll();
@@ -30,14 +34,13 @@ public class CategoriaService {
         return cat;
     }
 
-
     public Categoria atualizar(Categoria categoria) {
         Categoria cat = categoriaRepository.save(categoria);
         return cat;
     }
 
-
     public void deletar(Integer id) {
-        categoriaRepository.deleteById(id);
+        buscarPorId(id);
+        categoriaRepository.findById(id);
     }
 }

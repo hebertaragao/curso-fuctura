@@ -1,46 +1,68 @@
 package br.com.fuctura.biblioteca.controllers;
 
+import br.com.fuctura.biblioteca.dtos.CategoriaDto;
 import br.com.fuctura.biblioteca.models.Categoria;
 import br.com.fuctura.biblioteca.services.CategoriaService;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/categoria")
-
 public class CategoriaController {
 
+    private final CategoriaService categoriaService;
+    private final ModelMapper modelMapper;
+
     @Autowired
-    private CategoriaService categoriaService;
+    public CategoriaController(CategoriaService categoriaService, ModelMapper modelMapper) {
+        this.categoriaService = categoriaService;
+        this.modelMapper = modelMapper;
+    }
 
     @GetMapping("/{id}")
-    public Categoria buscarPorId(@PathVariable int id) {
+    public ResponseEntity<CategoriaDto> buscarPorId(@PathVariable Integer id) {
         Categoria cat = categoriaService.buscarPorId(id);
-        return cat;
+        CategoriaDto categoriaDto = modelMapper.map(cat, CategoriaDto.class);
+        return ResponseEntity.ok().body(categoriaDto);
+    }
+
+    @GetMapping("/nomes/{nome}")
+    public ResponseEntity<List<CategoriaDto>> buscarPorNome(@PathVariable String nome) {
+        List<Categoria> list = categoriaService.buscarPorNome(nome);
+        return ResponseEntity.ok().body(list.stream()
+                .map(x -> modelMapper.map(x, CategoriaDto.class))
+                .collect(Collectors.toList()));
     }
 
     @GetMapping
-    public List<Categoria> buscarTodos() {
+    public ResponseEntity<List<CategoriaDto>> buscarTodos() {
         List<Categoria> list = categoriaService.buscarTodos();
-        return list;
+        return ResponseEntity.ok().body(list.stream()
+                .map(x -> modelMapper.map(x, CategoriaDto.class))
+                .collect(Collectors.toList()));
     }
 
     @PostMapping
-    public Categoria salvar( @RequestBody Categoria categoria) {
-        return categoriaService.salvar(categoria);
+    public ResponseEntity<CategoriaDto> salvar(@RequestBody CategoriaDto categoriaDto) {
+        Categoria cat = categoriaService.salvar(modelMapper.map(categoriaDto, Categoria.class));
+        return ResponseEntity.ok().body(modelMapper.map(cat, CategoriaDto.class));
     }
 
     @PutMapping("/{id}")
-    public Categoria atualizar(@PathVariable Integer id, @RequestBody Categoria categoria) {
-        categoria.setId(id);
-        Categoria cat = categoriaService.atualizar(categoria);
-        return cat;
+    public ResponseEntity<CategoriaDto> atualizar(@PathVariable Integer id, @RequestBody CategoriaDto categoriaDto){
+        categoriaDto.setId(id);
+        Categoria cat = categoriaService.salvar(modelMapper.map(categoriaDto, Categoria.class));
+        return ResponseEntity.ok().body(modelMapper.map(cat, CategoriaDto.class));
     }
 
     @DeleteMapping("/{id}")
-    public void deletar(@PathVariable Integer id) {
+    public ResponseEntity<Void> deletar(@PathVariable Integer id) {
         categoriaService.deletar(id);
+        return ResponseEntity.noContent().build();
     }
 }

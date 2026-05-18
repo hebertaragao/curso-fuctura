@@ -5,5 +5,4 @@ public enum Edicao {
     PRIMEIRA,
     SEGUNDA,
     TERCEIRA;
-
 }
