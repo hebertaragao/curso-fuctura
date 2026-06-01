@@ -2,6 +2,7 @@ package br.com.fuctura.biblioteca.models;
 
 import br.com.fuctura.biblioteca.enums.Edicao;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.persistence.*;
 
 @Entity

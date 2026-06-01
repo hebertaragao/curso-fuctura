@@ -1,6 +1,7 @@
 package br.com.fuctura.biblioteca.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,6 +21,7 @@ public class Categoria {
     private String nome;
     private String descricao;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "categoria")
     private List<Livro> livros = new ArrayList<>();
 
