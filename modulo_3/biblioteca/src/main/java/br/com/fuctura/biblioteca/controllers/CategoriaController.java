@@ -1,56 +1,65 @@
 package br.com.fuctura.biblioteca.controllers;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import jakarta.validation.constraints.*;
-import org.hibernate.validator.constraints.Length;
 import br.com.fuctura.biblioteca.dtos.CategoriaDto;
 import br.com.fuctura.biblioteca.models.Categoria;
 import br.com.fuctura.biblioteca.services.CategoriaService;
+import jakarta.validation.Valid;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-@JsonPropertyOrder({"id","nome","descricao"})
-public class CategoriaDto {
+import java.util.List;
+import java.util.stream.Collectors;
 
-    private Integer id;
+@RestController
+@RequestMapping("/categoria")
+public class CategoriaController {
 
-    @NotNull(message = "O nome da categoria não pode ser nulo.")
-    @Length(min = 3, max = 15, message = "O nome da categoria deve conter entre 3 e 15 caracteres.")
-    private String nome;
+    @Autowired
+    private CategoriaService categoriaService;
 
-    @NotNull(message = "O nome descrição não pode ser nulo.")
-    @Length(min = 10, max = 50, message = "O campo descrição deve conter no entre 10 e 50 caracteres.")
-    private String descricao;
+    @Autowired
+    private ModelMapper modelMapper;
 
-    public CategoriaDto() {
+    @GetMapping("/{id}")
+    public ResponseEntity<CategoriaDto> buscarPorId(@PathVariable Integer id) {
+        Categoria cat = categoriaService.buscarPorId(id);
+        CategoriaDto categoriaDto = modelMapper.map(cat, CategoriaDto.class);
+        return ResponseEntity.ok().body(categoriaDto);
     }
 
-    public CategoriaDto(Integer id, String nome, String descricao) {
-        this.id = id;
-        this.nome = nome;
-        this.descricao = descricao;
+    @GetMapping("/nomes/{nome}")
+    public ResponseEntity<List<CategoriaDto>> buscarPorNome(@PathVariable String nome) {
+        List<Categoria> list = categoriaService.buscarPorNome(nome);
+        return ResponseEntity.ok().body(list.stream().map(x -> modelMapper.
+                map(x, CategoriaDto.class)).collect(Collectors.toList()));
     }
 
-    public Integer getId() {
-        return id;
+    @GetMapping
+    public ResponseEntity<List<CategoriaDto>> buscarTodos() {
+        List<Categoria> list = categoriaService.buscarTodos();
+        return ResponseEntity.ok().body(list.stream().map(x -> modelMapper.
+                map(x, CategoriaDto.class)).collect(Collectors.toList()));
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    @PostMapping
+    public ResponseEntity<CategoriaDto> salvar(@RequestBody @Valid CategoriaDto categoriaDto) {
+        Categoria cat = categoriaService.salvar(modelMapper.map(categoriaDto, Categoria.class));
+        return ResponseEntity.ok().body(modelMapper.map(cat, CategoriaDto.class));
     }
 
-    public String getNome() {
-        return nome;
+    @PutMapping("/{id}")
+    public ResponseEntity<CategoriaDto> atualizar(@PathVariable Integer id, @RequestBody @Valid CategoriaDto categoriaDto){
+        categoriaDto.setId(id);
+        Categoria cat = categoriaService.atualizar(modelMapper.map(categoriaDto, Categoria.class));
+        return ResponseEntity.ok().body(modelMapper.map(cat, CategoriaDto.class));
     }
 
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public String getDescricao() {
-        return descricao;
-    }
-
-    public void setDescricao(String descricao) {
-        this.descricao = descricao;
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletar(@PathVariable Integer id) {
+        categoriaService.deletar(id);
+        return ResponseEntity.noContent().build();
     }
 
 }
