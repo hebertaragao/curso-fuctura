@@ -3,6 +3,7 @@ package br.com.fuctura.biblioteca.services;
 import br.com.fuctura.biblioteca.exceptions.ObjectNotFoundException;
 import br.com.fuctura.biblioteca.models.Categoria;
 import br.com.fuctura.biblioteca.repositories.CategoriaRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -12,17 +13,20 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class CategoriaService {
 
     @Autowired
     private CategoriaRepository categoriaRepository;
 
     public Categoria buscarPorId(Integer id) {
+        log.info("Buscando categoria por id: {}", id);
         Optional<Categoria> cat = categoriaRepository.findById(id);
         //return cat.orElseThrow(() -> new ObjectNotFoundException("Categoria não encontrada com este id: " + id));
         if (cat.isPresent()) {
             return cat.get();
         }
+        log.error("Categoria não encontrada com este id: {}", id);
         throw new ObjectNotFoundException("Categoria não encontrada com este id: " + id);
 
     }
@@ -62,6 +66,7 @@ public class CategoriaService {
             throw new DataIntegrityViolationException("Não é possível excluir a categoria id=" + id +
                                                         " pois existem livros associados a ela.");
         }
+        log.info("Deletando categoria id: {}", id);
         categoriaRepository.deleteById(id);
     }
 
