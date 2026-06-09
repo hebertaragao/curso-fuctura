@@ -1,82 +1,95 @@
 package br.com.fuctura.biblioteca.models;
 
+import br.com.fuctura.biblioteca.dtos.LivroDto;
 import br.com.fuctura.biblioteca.enums.Edicao;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.persistence.*;
 
 @Entity
 public class Livro {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
-	private String titulo;
-	private String autor;
-	private String texto;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+    private String titulo;
+    private String autor;
+    private String texto;
 
-	@Enumerated(EnumType.STRING)
-	private Edicao edicao;
+    @Enumerated(EnumType.STRING)
+    private Edicao edicao;
 
-	@ManyToOne
-	@JoinColumn(name = "categoria_id")
-	private Categoria categoria;
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "categoria_id")
+    private Categoria categoria;
 
-	public Livro() {
-	}
+    public Livro() {
+    }
 
-	public Livro(Integer id, String titulo, String autor, String texto, Edicao edicao, Categoria categoria) {
-		this.id = id;
-		this.titulo = titulo;
-		this.autor = autor;
-		this.texto = texto;
-		this.edicao = edicao;
-		this.categoria = categoria;
-	}
+    public Livro(Integer id, String titulo, String autor, String texto, Edicao edicao, Categoria categoria) {
+        this.id = id;
+        this.titulo = titulo;
+        this.autor = autor;
+        this.texto = texto;
+        this.edicao = edicao;
+        this.categoria = categoria;
+    }
 
-	public Integer getId() {
-		return id;
-	}
+    public Livro(LivroDto livroDto) {
+        this.id = livroDto.getId();
+        this.titulo = livroDto.getTitulo();
+        this.autor = livroDto.getAutor();
+        this.texto = livroDto.getTexto();
+        this.edicao = livroDto.getEdicao();
+        this.categoria = livroDto.getCategoria();
+    }
 
-	public void setId(Integer id) {
-		this.id = id;
-	}
+    public Integer getId() {
+        return id;
+    }
 
-	public String getTitulo() {
-		return titulo;
-	}
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
-	public void setTitulo(String titulo) {
-		this.titulo = titulo;
-	}
+    public String getTitulo() {
+        return titulo;
+    }
 
-	public String getAutor() {
-		return autor;
-	}
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
+    }
 
-	public void setAutor(String autor) {
-		this.autor = autor;
-	}
+    public String getAutor() {
+        return autor;
+    }
 
-	public String getTexto() {
-		return texto;
-	}
+    public void setAutor(String autor) {
+        this.autor = autor;
+    }
 
-	public void setTexto(String texto) {
-		this.texto = texto;
-	}
+    public String getTexto() {
+        return texto;
+    }
 
-	public Edicao getEdicao() {
-		return edicao;
-	}
+    public void setTexto(String texto) {
+        this.texto = texto;
+    }
 
-	public void setEdicao(Edicao edicao) {
-		this.edicao = edicao;
-	}
+    public Edicao getEdicao() {
+        return edicao;
+    }
 
-	public Categoria getCategoria() {
-		return categoria;
-	}
+    public void setEdicao(Edicao edicao) {
+        this.edicao = edicao;
+    }
 
-	public void setCategoria(Categoria categoria) {
-		this.categoria = categoria;
-	}
+    public Categoria getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(Categoria categoria) {
+        this.categoria = categoria;
+    }
 }

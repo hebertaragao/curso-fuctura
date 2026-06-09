@@ -1,5 +1,7 @@
 package br.com.fuctura.biblioteca.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,18 +15,19 @@ import java.util.List;
 @NoArgsConstructor
 public class Categoria {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
-	private String nome;
-	private String descricao;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+    private String nome;
+    private String descricao;
 
-	@OneToMany(mappedBy = "categoria")
-	private List<Livro> livros = new ArrayList<>();
+    @JsonIgnore
+    @OneToMany(mappedBy = "categoria")
+    private List<Livro> livros = new ArrayList<>();
 
-	public Categoria(Integer id, String nome, String descricao) {
-		this.id = id;
-		this.nome = nome;
-		this.descricao = descricao;
-	}
+    public Categoria(Integer id, String nome, String descricao) {
+        this.id = id;
+        this.nome = nome;
+        this.descricao = descricao;
+    }
 }
