@@ -8,6 +8,7 @@ import { Autenticador } from '../shared/services/autenticador';
 // modules
 import { MaterialModule } from '../material/material-module';
 import { HttpStatusCode } from '@angular/common/http';
+import { ILogin } from '../shared/models/login.interface';
 
 @Component({
   selector: 'app-login',
@@ -39,7 +40,7 @@ export class Login {
   }
 
   private autenticar(): void {
-    const login = this.formulario.value;
+    const login:ILogin = this.formulario.value;
 
     this.autenticador.autenticar(login).subscribe({
       next: (resp) => {

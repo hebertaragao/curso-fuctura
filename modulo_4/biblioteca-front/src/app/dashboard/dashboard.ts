@@ -9,6 +9,8 @@ import { Logout } from '../shared/components/logout/logout';
 // models
 import { IDespesa } from '../shared/models/despesa.interface';
 import { IReceita } from '../shared/models/receita.interface';
+import { Lancamentos } from '../shared/services/lancamentos';
+import { Lancamento } from '../shared/models/lancamento';
 
 @Component({
   selector: 'app-dashboard',
@@ -29,6 +31,7 @@ export class Dashboard {
   constructor(
     private router: Router,
     private cdr: ChangeDetectorRef,
+    private lancamentosService: Lancamentos
   ) {
     this.listarLancamentos();
   }  
@@ -38,6 +41,20 @@ export class Dashboard {
    * @return void
    */
   private listarLancamentos(): void {
+    this.lancamentosService.listarLancamentos().subscribe({
+      next: (resp) => {
+        const lancamentos:Lancamento[] | null = resp.body;
+
+        this.dataSourceReceitas = lancamentos ? lancamentos
+          .filter( (lanc) => lanc.ehReceita === true)
+          .map( lanc => Lancamento.toDespesaOrReceita(lanc)) : [];
+        this.dataSourceDespesas = lancamentos ? lancamentos
+          .filter( (lanc) => lanc.ehReceita === false)
+          .map( lanc => Lancamento.toDespesaOrReceita(lanc)) : [];  
+
+        this.cdr.detectChanges();  
+      }
+    });
   }
 
   /**
