@@ -16,6 +16,8 @@ import { Menu } from '../../shared/components/menu/menu';
 import { IDespesa } from '../../shared/models/despesa.interface';
 import Swal from 'sweetalert2';
 import { Lancamento } from '../../shared/models/lancamento';
+import { MenuService } from '../../shared/services/menu-service';
+import { MenuTypeEnum } from '../../shared/enums/menu-type.enum';
 
 @Component({
   selector: 'app-despesas',
@@ -39,8 +41,10 @@ export class Despesas {
     private cdr: ChangeDetectorRef,
     private router: Router,
     private formBuilder: FormBuilder,
+    private menuService: MenuService,
     private lancamentosService: Lancamentos
   ) {  
+    this.menuService.ondeEstou = MenuTypeEnum.RELATORIO_DESPESA;
     this.listarLancamentos();
     this.iniciarFormulario();    
   }

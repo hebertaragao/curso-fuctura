@@ -20,6 +20,8 @@ import { MenuTypeEnum } from '../../shared/enums/menu-type.enum';
 import { Lancamento } from '../../shared/models/lancamento';
 import convertToDateDB from '../../shared/functions/convert-date-db.function';
 import convertToValueDB from '../../shared/functions/convert-value-db.function';
+import { DinheiroDirective } from '../../shared/directives/dinheiro.directive';
+import { MaiusculoDirective } from '../../shared/directives/maiusculo.directive';
 
 @Component({
   selector: 'app-despesas',
@@ -27,6 +29,8 @@ import convertToValueDB from '../../shared/functions/convert-value-db.function';
     Menu,
     Logout,
     MaterialModule,
+    DinheiroDirective,
+    MaiusculoDirective,
     ReactiveFormsModule,
   ],
   templateUrl: './despesas.html',
