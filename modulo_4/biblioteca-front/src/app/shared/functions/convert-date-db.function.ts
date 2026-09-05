@@ -6,7 +6,7 @@ import { DateTime } from 'luxon';
  * @returns  formato de saída: YYYY-MM-DD
  */
 const convertToDateDB = (date: string): string => {
-  return  DateTime.fromISO(date).toFormat('YYYY-MM-DD');
+  return  DateTime.fromISO(date).toFormat('yyyy-MM-dd');
 }
 
 export default convertToDateDB;

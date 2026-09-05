@@ -1,10 +1,15 @@
 import { ChangeDetectorRef, Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { HttpErrorResponse, HttpStatusCode } from '@angular/common/http';
+// libs
+import Swal from 'sweetalert2';
+import { DateTime } from 'luxon';
 // modules
 import { MaterialModule } from '../../material/material-module';
 // services 
 import { MenuService } from '../../shared/services/menu-service';
+import { Lancamentos } from '../../shared/services/lancamentos';
 // components
 import { Menu } from '../../shared/components/menu/menu';
 import { Logout } from '../../shared/components/logout/logout';
@@ -12,6 +17,9 @@ import { Logout } from '../../shared/components/logout/logout';
 import { IDespesa } from '../../shared/models/despesa.interface';
 // enums
 import { MenuTypeEnum } from '../../shared/enums/menu-type.enum';
+import { Lancamento } from '../../shared/models/lancamento';
+import convertToDateDB from '../../shared/functions/convert-date-db.function';
+import convertToValueDB from '../../shared/functions/convert-value-db.function';
 
 @Component({
   selector: 'app-despesas',
@@ -34,10 +42,10 @@ export class Despesas {
     private cdr: ChangeDetectorRef,
     private formBuilder: FormBuilder,    
     private activeRouter: ActivatedRoute,
-    private menuService: MenuService
+    private menuService: MenuService,
+    private lancamentosService: Lancamentos,
   ){
     this.menuService.ondeEstou = MenuTypeEnum.LANCAMENTO_DESPESA;
-    this.listarDespesas();
     this.iniciarFormulario();
 
     const id = this.activeRouter.snapshot.params['id'];
@@ -45,7 +53,7 @@ export class Despesas {
       this.idEdicao = id;
       this.verificarModoEdicao();
     } else {
-      // modo edicao
+      this.lancamentosService.modoEdicao = false;
     }
   }
 
@@ -57,25 +65,42 @@ export class Despesas {
    * Iniciar criação do formulario
    */
   private iniciarFormulario(): void {
+    const hoje = DateTime.now().toISO();
+    this.formulario = this.formBuilder.group({
+      tipo: ['', Validators.required],
+      data: hoje,
+      ehFixo: false,
+      descricao: ['', Validators.required],
+      valor: ['', Validators.required]
+    });    
   }
 
   /**
    * Verifica se está no modo edição
    */
   private verificarModoEdicao(): void {
+    if(this.lancamentosService.modoEdicao) {
+      const despesa: IDespesa = Lancamento.toDespesaOrReceita(
+        this.lancamentosService.recuperaLancamentoSelecionado());
+      this.carregarFormulario(despesa);
+    }
   }
-
-  /** 
-   * carregar as lista de despesas 
-   */
-  private listarDespesas(): void {
-  }  
 
   /**
    * Carregar o formulario com os dados da despesa
    * @param despesa instacia da despesa
    */
   private carregarFormulario(despesa: IDespesa): void {
+    if (despesa) {
+      const valor = new Intl.NumberFormat('pt-BR', {minimumFractionDigits: 2}).format(despesa.valor);
+      this.formulario.patchValue({
+        tipo: despesa.tipo,
+        data: despesa.data,
+        ehFixo: despesa.ehFixo,
+        descricao: despesa.descricao,
+        valor: valor
+      });
+    }    
   }
 
   /**
@@ -83,6 +108,28 @@ export class Despesas {
    * @param despesa objeto instanciado
    */
   private salvar(despesa: IDespesa): void {
+    this.lancamentosService.criarLancamento(new Lancamento(despesa, false)).subscribe({
+      next: (response) => {
+        const lancamentoGravado = response.body;
+        Swal.fire({
+          title: "SUCESSO: Criar Despesa",
+          text: "Despesa criada com sucesso. Código: " + lancamentoGravado?.id,
+          icon: "success"
+        });
+        this.onLimpar();
+      },
+      error: (err: HttpErrorResponse) => {
+        let msg = err.error.error;
+        if (err.status === HttpStatusCode.BadRequest && msg?.includes('Bad Request')) {
+          msg = 'Usuário não autenticado';
+        }
+        Swal.fire({
+          title: "ALERTA: Criar Despesa",
+          text: err.error.mensagem ? err.error.mensagem : 'Ocorreu um erro inesperadao. [' + msg + ']',
+          icon: "warning"
+        });
+      }
+    });    
   }
 
   /**
@@ -90,18 +137,62 @@ export class Despesas {
    * @param despesa objeto instanciado
    */
   private atualizar(despesa: IDespesa): void {
+    despesa.id = +this.idEdicao;
+    this.lancamentosService.atualizarLancamento(new Lancamento(despesa, false)).subscribe({
+      next: (response) => {
+        const lancamentoGravado = response.body;
+        Swal.fire({
+          title: "SUCESSO: Editar Despesa",
+          text: "Despesa criada com sucesso. Código: " + lancamentoGravado?.id,
+          icon: "success"
+        });
+        this.onLimpar();
+      },
+      error: (err: HttpErrorResponse) => {
+        let msg = err.error.error;
+        if (err.status === HttpStatusCode.BadRequest && msg?.includes('Bad Request')) {
+          msg = 'Usuário não autenticado';
+        }
+        Swal.fire({
+          title: "ALERTA: Editar Despesa",
+          text: err.error.mensagem ? err.error.mensagem : 'Ocorreu um erro inesperadao. [' + msg + ']',
+          icon: "warning"
+        });
+      }
+    });    
   }
   
   /**
    * Metodo que respode ao evento para salvar
    */
   onSalvar(): void {
+    const despesa: IDespesa = this.formulario.value;
+    // formata o valor para 9 digitos com 2 casas decimais
+    // exe: 0000000.00
+    despesa.valor = convertToValueDB(despesa.valor);
+    // converte a data para o formato do banco de dados
+    // exe: 2023-10-01
+    despesa.data = convertToDateDB(despesa.data);
+
+    if (this.lancamentosService.modoEdicao) {
+      this.atualizar(despesa);
+    } else {
+      this.salvar(despesa);
+    }    
   }
 
   /**
    * Método que responde ao evento de limpar
    */
   onLimpar(): void {
+    this.formulario.reset();
+    this.formulario.patchValue({
+      data: DateTime.now().toISO(),
+      ehFixo: false
+    });
+    // sair do módo edicao e limpar a despesa selecionada
+    this.lancamentosService.modoEdicao = false;
+    this.lancamentosService.limparLancamentoSelecionado();    
   }
 
 }

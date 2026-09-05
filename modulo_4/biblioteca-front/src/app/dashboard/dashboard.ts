@@ -1,7 +1,13 @@
 import { ChangeDetectorRef, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-// momdules
+import { HttpErrorResponse, HttpStatusCode } from '@angular/common/http';
+// libs
+import Swal from 'sweetalert2';
+// services
+import { Lancamentos } from '../shared/services/lancamentos';
+import { MenuService } from '../shared/services/menu-service';
+// modules
 import { MaterialModule } from '../material/material-module';
 // components
 import { Menu } from '../shared/components/menu/menu';
@@ -9,8 +15,8 @@ import { Logout } from '../shared/components/logout/logout';
 // models
 import { IDespesa } from '../shared/models/despesa.interface';
 import { IReceita } from '../shared/models/receita.interface';
-import { Lancamentos } from '../shared/services/lancamentos';
 import { Lancamento } from '../shared/models/lancamento';
+import { MenuTypeEnum } from '../shared/enums/menu-type.enum';
 
 @Component({
   selector: 'app-dashboard',
@@ -31,8 +37,10 @@ export class Dashboard {
   constructor(
     private router: Router,
     private cdr: ChangeDetectorRef,
+    private menuService: MenuService,
     private lancamentosService: Lancamentos
   ) {
+    this.menuService.ondeEstou = MenuTypeEnum.DASHBOARD;
     this.listarLancamentos();
   }  
 
@@ -63,6 +71,25 @@ export class Dashboard {
    * @return void
    */
   private removerDespesa(id: number): void {
+    this.lancamentosService.removerLancamento(id).subscribe({
+      next: (response) => {
+        if (response.status === HttpStatusCode.Ok) {
+          Swal.fire(
+            'SUCESSO: Remover Despesa',
+            'Despesa removida com sucesso',
+            'success'
+          )
+        }
+        this.listarLancamentos();
+      },
+      error: (err: HttpErrorResponse) => {
+        Swal.fire(
+          'ALERTA: Remover Despesa',
+          err.error.mensagem ? err.error.mensagem : 'Ocorrer um erro inesperado. ['+ err.error.error +']',
+          'warning'
+        )
+      }
+    });    
   }
 
   /**
@@ -78,6 +105,22 @@ export class Dashboard {
    * @param despesa instancia do objeto despesa
    */
   onRemoverDespesa(despesa: IDespesa): void {
+    if(despesa) {
+      Swal.fire({
+        title: 'Remover Despesa',
+        text: `Deseja remover a despesa '${despesa.descricao.toUpperCase()}' ?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sim, remova!'
+      }).then((resultado) => {
+        if (resultado.isConfirmed) {
+          const id = despesa.id ? despesa.id : 0;
+          this.removerDespesa(id);
+        }
+      });
+    }    
   }
 
   /**
@@ -85,6 +128,11 @@ export class Dashboard {
    * @param item instancia do objeto lancamento
    */
   onEditDespesa(item: any): void {
+    if(item) {
+      this.lancamentosService.modoEdicao = true;
+      this.lancamentosService.gravaLancamentoSelecionado(item);
+      this.router.navigate(['lancamentos/despesa/'+item.id]);
+    }    
   }
 
     /**

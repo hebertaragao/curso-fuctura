@@ -1,13 +1,21 @@
 import { ChangeDetectorRef, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { HttpStatusCode } from '@angular/common/http';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+// libs
+import { DateTime } from 'luxon';
+// services
+import { Lancamentos } from '../../shared/services/lancamentos';
 // modules
 import { MaterialModule } from '../../material/material-module';
 // components
 import { Logout } from '../../shared/components/logout/logout';
 import { Menu } from '../../shared/components/menu/menu';
-import { Router } from '@angular/router';
+// models
 import { IDespesa } from '../../shared/models/despesa.interface';
+import Swal from 'sweetalert2';
+import { Lancamento } from '../../shared/models/lancamento';
 
 @Component({
   selector: 'app-despesas',
@@ -31,6 +39,7 @@ export class Despesas {
     private cdr: ChangeDetectorRef,
     private router: Router,
     private formBuilder: FormBuilder,
+    private lancamentosService: Lancamentos
   ) {  
     this.listarLancamentos();
     this.iniciarFormulario();    
@@ -40,13 +49,35 @@ export class Despesas {
    * carregar as lista de lancamentos (Recitas e Despesas)
    */
   private listarLancamentos(): void {
-
+    this.lancamentosService.listarLancamentos().subscribe({
+      next: (response) => {
+        if (response.status === HttpStatusCode.Ok) {
+          const lancamentos = response.body ? response.body : [];
+          const {dataInicial, dataFinal} = this.formulario.value;
+          this.dataSource = lancamentos
+          .filter(lanc => lanc.ehReceita === false && (
+            ( DateTime.fromISO(lanc.data).valueOf() >= DateTime.fromISO(dataInicial).valueOf() &&
+              DateTime.fromISO(lanc.data).valueOf() <= DateTime.fromISO(dataFinal).valueOf() ) 
+            )  
+          )
+          .sort((a, b) => DateTime.fromISO(b.data).valueOf() - DateTime.fromISO(a.data).valueOf());
+          // garante que o Angular reavalie a view após a mudança
+          this.cdr.detectChanges();
+        }
+      }
+    });
   }
   
   /** 
    * iniciar formmulario
    */
   private iniciarFormulario(): void {
+    const hoje = DateTime.now().toISO();
+    const inicioMes = DateTime.now().startOf('month').toISO();
+    this.formulario = this.formBuilder.group({
+      dataInicial: inicioMes,
+      dataFinal: hoje
+    });    
   }  
 
   /**
@@ -63,7 +94,26 @@ export class Despesas {
    * Método que realiza a remoção da despesa do backend
    * @param id numero identificador da despesa
    */
-  private remover(id: number): void {    
+  private remover(id: number): void { 
+    this.lancamentosService.removerLancamento(id).subscribe({
+      next: (response) => {
+        if (response.status === HttpStatusCode.Ok) {
+          Swal.fire(
+            'SUCESSO: Remover Despesa',
+            'Despesa removida com sucesso',
+            'success'
+          )
+        }
+        this.removeItemLista(id);
+      },
+      error: (err) => {
+        Swal.fire(
+          'ALERTA: Remover Despesa',
+          err.error.mensagem ? err.error.mensagem : 'Ocorrer um erro inesperado. ['+ err.error.error +']',
+          'warning'
+        )
+      }
+    });       
   }
 
   /**
@@ -79,6 +129,22 @@ export class Despesas {
    * @param despesa instancia do objeto despesa
    */
   onRemover(despesa: IDespesa): void {
+    if(despesa) {
+      Swal.fire({
+        title: 'Remover Despesa',
+        text: `Deseja remover a despesa '${despesa.descricao.toUpperCase()}' ?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sim, remova!'
+      }).then((resultado) => {
+        if (resultado.isConfirmed) {
+          const id = despesa.id ? despesa.id : 0;
+          this.remover(id);
+        }
+      });
+    }    
   }  
 
   /**
@@ -86,11 +152,18 @@ export class Despesas {
    * @param item instancia do objeto despesa
    */
   onEditar(item: IDespesa): void {
+    if(item) {
+      this.lancamentosService.modoEdicao = true;
+      // this.lancamentoService.sendSelecionada(lancamento);
+      this.lancamentosService.gravaLancamentoSelecionado(new Lancamento(item,false));
+      this.router.navigate(['lancamentos/despesa/'+item.id]);
+    }    
   }  
 
   /**
    * Método que respondne ao evento de pesquisar
    */
   onPequisar(): void {
+    this.listarLancamentos();
   }  
 }
