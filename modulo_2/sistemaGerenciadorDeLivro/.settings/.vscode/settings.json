@@ -1,0 +1,10 @@
+{
+  "java.jdt.ls.vmargs": " -javaagent:/home/ericmoraess/Downloads/lombok.jar",
+  "java.configuration.runtimes": [
+    {
+      "name": "JavaSE-21",
+      "path": "/usr/lib/jvm/java-21-amazon-corretto",
+      "default": true
+    }
+  ]
+}
